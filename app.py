@@ -7,8 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/10XYbA9oFnEjGFXcHd5j-ItB4CMU8Sf9O
 """
 
-
-
 import streamlit as st
 import pandas as pd
 import datetime
@@ -28,7 +26,7 @@ if uploaded_files:
                 continue
             last_row = df.iloc[-1]
             # Try parsing the last column as date
-            last_value = last_row.iloc[-1]
+            last_value = last_row.iloc[0]
             parsed_date = pd.to_datetime(last_value, errors='coerce')
 
             if pd.notna(parsed_date) and parsed_date.normalize() == today:
