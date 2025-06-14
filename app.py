@@ -11,35 +11,49 @@ import streamlit as st
 import pandas as pd
 import datetime
 
-st.title("📅 Excel Date Checker")
+st.set_page_config(page_title="Excel Date Checker", layout="centered")
+st.title("📅 Excel Last Row Date Checker")
 
-uploaded_files = st.file_uploader("Upload Excel files", type=["xlsx"], accept_multiple_files=True)
+st.markdown("Upload Excel files to check if the **first column** of the **last row** contains **today's date**.")
+
+uploaded_files = st.file_uploader("Upload Excel files (.xlsx only)", type=["xlsx"], accept_multiple_files=True)
 
 if uploaded_files:
     today = pd.to_datetime(datetime.date.today()).normalize()
     matched_files = []
+    unmatched_files = []
 
     for file in uploaded_files:
         try:
             df = pd.read_excel(file, engine="openpyxl")
             if df.empty:
+                unmatched_files.append(file.name)
                 continue
-            last_row = df.iloc[-1]
-            # Try parsing the last column as date
-            last_value = last_row.iloc[0]
-            parsed_date = pd.to_datetime(last_value, errors='coerce')
+
+            # Get value in the FIRST column of the LAST row
+            last_row_value = df.iloc[-1, 0]
+            parsed_date = pd.to_datetime(last_row_value, errors='coerce')
 
             if pd.notna(parsed_date) and parsed_date.normalize() == today:
                 matched_files.append(file.name)
-        except Exception as e:
-            st.error(f"Error processing {file.name}: {e}")
+            else:
+                unmatched_files.append(file.name)
 
+        except Exception as e:
+            st.error(f"❌ Error in {file.name}: {e}")
+
+    # Show results
     if matched_files:
-        st.success("🎯 These files have today's date in the last row:")
+        st.success("✅ These files have today's date in the last row (first column):")
         for name in matched_files:
-            st.write(f"✅ {name}")
+            st.write(f"- {name}")
     else:
-        st.warning("❌ No file has today's date in the last row.")
+        st.warning("⚠️ No file has today's date in the last row (first column).")
+
+    if unmatched_files:
+        st.info("📂 These files do NOT have today's date in the last row (first column):")
+        for name in unmatched_files:
+            st.write(f"- {name}")
 
 
 
