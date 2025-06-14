@@ -11,12 +11,17 @@ import streamlit as st
 import pandas as pd
 import datetime
 
-st.set_page_config(page_title="Excel Date Checker", layout="centered")
+st.set_page_config(page_title="Excel Last Row Date Checker", layout="centered")
 st.title("📅 Excel Last Row Date Checker")
 
-st.markdown("Upload Excel files to check if the **first column** of the **last row** contains **today's date**.")
+st.markdown(
+    "Upload one or more Excel files. This app checks if the **first column** of the **last row** "
+    "matches **today's date**."
+)
 
-uploaded_files = st.file_uploader("Upload Excel files (.xlsx only)", type=["xlsx"], accept_multiple_files=True)
+uploaded_files = st.file_uploader(
+    "Upload Excel files (.xlsx only)", type=["xlsx"], accept_multiple_files=True
+)
 
 if uploaded_files:
     today = pd.to_datetime(datetime.date.today()).normalize()
@@ -30,9 +35,9 @@ if uploaded_files:
                 unmatched_files.append(file.name)
                 continue
 
-            # Get value in the FIRST column of the LAST row
+            # Get value from the first column of the last row
             last_row_value = df.iloc[-1, 0]
-            parsed_date = pd.to_datetime(last_row_value, errors='coerce')
+            parsed_date = pd.to_datetime(last_row_value, errors="coerce")
 
             if pd.notna(parsed_date) and parsed_date.normalize() == today:
                 matched_files.append(file.name)
@@ -40,9 +45,13 @@ if uploaded_files:
                 unmatched_files.append(file.name)
 
         except Exception as e:
-            st.error(f"❌ Error in {file.name}: {e}")
+            st.error(f"❌ Error processing {file.name}: {e}")
 
-    # Show results
+    # Sort both lists alphabetically
+    matched_files.sort()
+    unmatched_files.sort()
+
+    # Display results
     if matched_files:
         st.success("✅ These files have today's date in the last row (first column):")
         for name in matched_files:
